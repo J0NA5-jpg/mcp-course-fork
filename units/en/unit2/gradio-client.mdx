@@ -17,7 +17,10 @@ Let's connect to an example MCP Server that is already running on Hugging Face. 
 from smolagents.mcp_client import MCPClient
 
 with MCPClient(
-    {"url": "https://abidlabs-mcp-tool-http.hf.space/gradio_api/mcp/sse", "transport": "sse",},
+    {
+		"url": "https://abidlabs-mcp-tool-http.hf.space/gradio_api/mcp/sse", 
+		"transport": "sse",
+	},
     structured_output=False
 ) as tools:
     # Tools from the remote server are available
@@ -62,7 +65,11 @@ Next, we'll connect to the MCP Server and get the tools that we can use to answe
 
 ```python
 mcp_client = MCPClient(
-    {"url": "https://abidlabs-mcp-tool-http.hf.space/gradio_api/mcp/sse", "transport": "sse",} # This is the MCP Client we created in the previous section
+    {
+		"url": "https://abidlabs-mcp-tool-http.hf.space/gradio_api/mcp/sse", 
+		"transport": "sse",
+	},
+    structured_output=False # This is the MCP Client we created in the previous section
 )
 tools = mcp_client.get_tools()
 ```
