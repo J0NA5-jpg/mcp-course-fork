@@ -1,0 +1,19 @@
+[project]
+name = "pr-agent-actions"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "J0NA5-jpg", email = "mertens_jm@outlook.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "mcp[cli]>=1.0.0",
+]
+
+[project.scripts]
+pr-agent-actions = "pr_agent_actions:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
