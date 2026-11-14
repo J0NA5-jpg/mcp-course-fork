@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mistral Chat</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        display: flex;
+        justify-content: center;
+        background: #f6f6f7;
+        color: #1a1a1a;
+      }
+      main {
+        width: 100%;
+        max-width: 720px;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        gap: 1rem;
+      }
+      h1 {
+        font-size: 1.25rem;
+        margin: 0;
+      }
+      #messages {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.5rem;
+      }
+      .message {
+        max-width: 80%;
+        padding: 0.6rem 0.9rem;
+        border-radius: 0.9rem;
+        white-space: pre-wrap;
+        line-height: 1.4;
+      }
+      .user {
+        align-self: flex-end;
+        background: #4f46e5;
+        color: #fff;
+      }
+      .assistant {
+        align-self: flex-start;
+        background: #e5e5ea;
+        color: #1a1a1a;
+      }
+      .error {
+        align-self: flex-start;
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+      #composer {
+        display: flex;
+        gap: 0.5rem;
+      }
+      #input {
+        flex: 1;
+        padding: 0.7rem 0.9rem;
+        border: 1px solid #d4d4d8;
+        border-radius: 0.6rem;
+        font-size: 1rem;
+      }
+      button {
+        padding: 0.7rem 1.2rem;
+        border: none;
+        border-radius: 0.6rem;
+        background: #4f46e5;
+        color: #fff;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #18181b;
+          color: #f4f4f5;
+        }
+        .assistant {
+          background: #27272a;
+          color: #f4f4f5;
+        }
+        #input {
+          background: #27272a;
+          border-color: #3f3f46;
+          color: #f4f4f5;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Mistral Chat (mistral-small-latest)</h1>
+      <div id="messages"></div>
+      <form id="composer">
+        <input id="input" type="text" placeholder="Ask something..." autocomplete="off" required />
+        <button id="send" type="submit">Send</button>
+      </form>
+    </main>
+    <script>
+      const messagesEl = document.getElementById("messages");
+      const form = document.getElementById("composer");
+      const input = document.getElementById("input");
+      const send = document.getElementById("send");
+      const history = [];
+
+      function addMessage(role, text, className) {
+        const el = document.createElement("div");
+        el.className = "message " + (className || role);
+        el.textContent = text;
+        messagesEl.appendChild(el);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+        return el;
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = "";
+        send.disabled = true;
+
+        history.push({ role: "user", content: text });
+        addMessage("user", text);
+        const pending = addMessage("assistant", "Thinking...");
+
+        try {
+          const res = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages: history }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || res.statusText);
+          history.push({ role: "assistant", content: data.reply });
+          pending.textContent = data.reply;
+        } catch (err) {
+          pending.className = "message error";
+          pending.textContent = "Error: " + err.message;
+        } finally {
+          send.disabled = false;
+          input.focus();
+        }
+      });
+    </script>
+  </body>
+</html>
